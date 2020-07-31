@@ -538,6 +538,10 @@ void BmpShow(bool json)
       float f_dewpoint = CalcTempHumToDew(bmp_temperature, bmp_humidity);
       char dewpoint[33];
       dtostrfd(f_dewpoint, Settings.flag2.temperature_resolution, dewpoint);
+      float f_vpd = CalcTempHumToVPD(bmp_temperature, bmp_humidity);
+      char vpd[33];
+      dtostrfd(f_vpd, Settings.flag2.temperature_resolution, vpd);
+
 #ifdef USE_BME680
       char gas_resistance[33];
       dtostrfd(bmp_sensors[bmp_idx].bmp_gas_resistance, 2, gas_resistance);
@@ -545,7 +549,7 @@ void BmpShow(bool json)
 
       if (json) {
         char json_humidity[80];
-        snprintf_P(json_humidity, sizeof(json_humidity), PSTR(",\"" D_JSON_HUMIDITY "\":%s,\"" D_JSON_DEWPOINT "\":%s"), humidity, dewpoint);
+        snprintf_P(json_humidity, sizeof(json_humidity), PSTR(",\"" D_JSON_HUMIDITY "\":%s,\"" D_JSON_DEWPOINT "\":%s,\"" D_JSON_VPD "\":%s"), humidity, dewpoint, vpd);
         char json_sealevel[40];
         snprintf_P(json_sealevel, sizeof(json_sealevel), PSTR(",\"" D_JSON_PRESSUREATSEALEVEL "\":%s"), sea_pressure);
 #ifdef USE_BME680
@@ -586,6 +590,7 @@ void BmpShow(bool json)
         if (bmp_sensors[bmp_idx].bmp_model >= 2) {
           WSContentSend_PD(HTTP_SNS_HUM, name, humidity);
           WSContentSend_PD(HTTP_SNS_DEW, name, dewpoint, TempUnit());
+          WSContentSend_PD(HTTP_SNS_VPD, name, vpd, TempUnit());
         }
         WSContentSend_PD(HTTP_SNS_PRESSURE, name, pressure, PressureUnit().c_str());
         if (Settings.altitude != 0) {

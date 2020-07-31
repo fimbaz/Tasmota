@@ -81,6 +81,7 @@
 #define D_DARKLIGHT "Dark"
 #define D_DEBUG "Debug"
 #define D_DEWPOINT "Dew point"
+#define D_VPD "Vapor Pressure Deficit"
 #define D_DISABLED "Disabled"
 #define D_DISTANCE "Distance"
 #define D_DNS_SERVER "DNS Server"

@@ -781,6 +781,12 @@ float CalcTempHumToDew(float t, float h)
   return result;
 }
 
+float CalcTempHumToVPD(float t, float h)
+{
+  float svp = 610.78 *  exp(t / (t + 238.3) * 17.2694);
+  return (svp * (1 - h/100))/100;
+}
+
 float ConvertPressure(float p)
 {
   float result = p;
@@ -1222,11 +1228,16 @@ int ResponseAppendTime(void)
 
 int ResponseAppendTHD(float f_temperature, float f_humidity)
 {
-  float dewpoint = CalcTempHumToDew(f_temperature, f_humidity);
-  return ResponseAppend_P(PSTR("\"" D_JSON_TEMPERATURE "\":%*_f,\"" D_JSON_HUMIDITY "\":%*_f,\"" D_JSON_DEWPOINT "\":%*_f"),
-                          Settings.flag2.temperature_resolution, &f_temperature,
-                          Settings.flag2.humidity_resolution, &f_humidity,
-                          Settings.flag2.temperature_resolution, &dewpoint);
+  char temperature[FLOATSZ];
+  dtostrfd(f_temperature, Settings.flag2.temperature_resolution, temperature);
+  char humidity[FLOATSZ];
+  dtostrfd(f_humidity, Settings.flag2.humidity_resolution, humidity);
+  char dewpoint[FLOATSZ];
+  char vpd[FLOATSZ];
+  dtostrfd(CalcTempHumToDew(f_temperature, f_humidity), Settings.flag2.temperature_resolution, dewpoint);
+  dtostrfd(CalcTempHumToVPD(f_temperature, f_humidity), Settings.flag2.temperature_resolution, vpd);
+
+  return ResponseAppend_P(PSTR("\"" D_JSON_TEMPERATURE "\":%*_f,\"" D_JSON_HUMIDITY "\":%*_f,\"" D_JSON_DEWPOINT "\":%*_f,\"" D_JSON_VPD "\":%_*f"), temperature, humidity, dewpoint, vpd);
 }
 
 int ResponseJsonEnd(void)
